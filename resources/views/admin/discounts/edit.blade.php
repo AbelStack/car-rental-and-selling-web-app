@@ -1,0 +1,259 @@
+@extends('layouts.app')
+
+@section('title', 'Edit Discount - Admin')
+
+@section('content')
+<div class="min-h-screen bg-soft-white py-8">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <!-- Header -->
+        <div class="mb-8">
+            <div class="flex items-center space-x-4 mb-4">
+                <a href="{{ route('admin.discounts.show', $discount) }}" 
+                   class="inline-flex items-center text-slate-600 hover:text-neon-blue transition-colors duration-200">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                    </svg>
+                    Back to Discount
+                </a>
+            </div>
+            <h1 class="text-3xl font-bold text-slate-900">Edit Discount</h1>
+            <p class="text-slate-600 mt-2">Update discount settings for "{{ $discount->name }}"</p>
+        </div>
+
+        <!-- Form -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+            <form action="{{ route('admin.discounts.update', $discount) }}" method="POST" id="discount-form">
+                @csrf
+                @method('PUT')
+                
+                <div class="p-6 space-y-6">
+                    
+                    <!-- Basic Information -->
+                    <div>
+                        <h3 class="text-lg font-semibold text-slate-900 mb-4">Basic Information</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="name" class="block text-sm font-medium text-slate-700 mb-2">Discount Name *</label>
+                                <input type="text" name="name" id="name" value="{{ old('name', $discount->name) }}" required
+                                       class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-neon-blue focus:border-transparent @error('name') border-red-500 @enderror">
+                                @error('name')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <div>
+                                <label for="type" class="block text-sm font-medium text-slate-700 mb-2">Discount Type</label>
+                                <input type="text" value="{{ ucfirst($discount->type) }} Discount" disabled
+                                       class="w-full px-3 py-2 border border-slate-300 rounded-lg bg-slate-50 text-slate-500">
+                                <p class="mt-1 text-xs text-slate-500">Discount type cannot be changed after creation</p>
+                            </div>
+
+                            <div>
+                                <label for="percentage" class="block text-sm font-medium text-slate-700 mb-2">Discount Percentage *</label>
+                                <div class="relative">
+                                    <input type="number" name="percentage" id="percentage" value="{{ old('percentage', $discount->percentage) }}" 
+                                           step="0.01" min="0.01" max="50" required
+                                           class="w-full px-3 py-2 pr-8 border border-slate-300 rounded-lg focus:ring-2 focus:ring-neon-blue focus:border-transparent @error('percentage') border-red-500 @enderror">
+                                    <span class="absolute right-3 top-2 text-slate-500">%</span>
+                                </div>
+                                @error('percentage')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                                <p class="mt-1 text-xs text-slate-500">Maximum 50%</p>
+                            </div>
+
+                            <div>
+                                <label for="applies_to" class="block text-sm font-medium text-slate-700 mb-2">Applies To</label>
+                                <input type="text" value="{{ ucfirst($discount->applies_to) }}" disabled
+                                       class="w-full px-3 py-2 border border-slate-300 rounded-lg bg-slate-50 text-slate-500">
+                                <p class="mt-1 text-xs text-slate-500">Application scope cannot be changed after creation</p>
+                            </div>
+                        </div>
+
+                        <div class="mt-6">
+                            <label for="description" class="block text-sm font-medium text-slate-700 mb-2">Description</label>
+                            <textarea name="description" id="description" rows="3"
+                                      class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-neon-blue focus:border-transparent @error('description') border-red-500 @enderror"
+                                      placeholder="Optional description of the discount">{{ old('description', $discount->description) }}</textarea>
+                            @error('description')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
+
+                    <!-- Holiday Discount Fields -->
+                    @if($discount->type === 'holiday')
+                    <div>
+                        <h3 class="text-lg font-semibold text-slate-900 mb-4">Holiday Period</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="start_date" class="block text-sm font-medium text-slate-700 mb-2">Start Date *</label>
+                                <input type="date" name="start_date" id="start_date" value="{{ old('start_date', $discount->start_date->format('Y-m-d')) }}" required
+                                       class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-neon-blue focus:border-transparent @error('start_date') border-red-500 @enderror">
+                                @error('start_date')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <div>
+                                <label for="end_date" class="block text-sm font-medium text-slate-700 mb-2">End Date *</label>
+                                <input type="date" name="end_date" id="end_date" value="{{ old('end_date', $discount->end_date->format('Y-m-d')) }}" required
+                                       class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-neon-blue focus:border-transparent @error('end_date') border-red-500 @enderror">
+                                @error('end_date')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+                        </div>
+                    </div>
+                    @endif
+
+                    <!-- Duration Discount Fields -->
+                    @if($discount->type === 'duration')
+                    <div>
+                        <h3 class="text-lg font-semibold text-slate-900 mb-4">Duration Conditions</h3>
+                        <div class="bg-slate-50 rounded-lg p-4 mb-4">
+                            <p class="text-sm text-slate-600 mb-2">
+                                <strong>Note:</strong> Duration discounts apply automatically based on rental length. 
+                                You can define multiple tiers (e.g., 7-13 days = 3%, 14+ days = 6%).
+                            </p>
+                        </div>
+                        
+                        <div id="conditions-container">
+                            @if($discount->conditions)
+                                @foreach($discount->conditions as $index => $condition)
+                                <div class="condition-row grid grid-cols-1 md:grid-cols-4 gap-4 items-end mb-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-slate-700 mb-2">Min Days</label>
+                                        <input type="number" name="conditions[{{ $index }}][min_days]" min="1" 
+                                               value="{{ $condition['min_days'] }}"
+                                               class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-neon-blue focus:border-transparent">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-slate-700 mb-2">Max Days (Optional)</label>
+                                        <input type="number" name="conditions[{{ $index }}][max_days]" min="1" 
+                                               value="{{ $condition['max_days'] ?? '' }}"
+                                               class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-neon-blue focus:border-transparent">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-slate-700 mb-2">Percentage</label>
+                                        <div class="relative">
+                                            <input type="number" name="conditions[{{ $index }}][percentage]" step="0.01" min="0.01" max="50" 
+                                                   value="{{ $condition['percentage'] }}"
+                                                   class="w-full px-3 py-2 pr-8 border border-slate-300 rounded-lg focus:ring-2 focus:ring-neon-blue focus:border-transparent">
+                                            <span class="absolute right-3 top-2 text-slate-500">%</span>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <button type="button" onclick="removeCondition(this)" 
+                                                class="w-full px-3 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors duration-200">
+                                            Remove
+                                        </button>
+                                    </div>
+                                </div>
+                                @endforeach
+                            @else
+                                <div class="condition-row grid grid-cols-1 md:grid-cols-4 gap-4 items-end mb-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-slate-700 mb-2">Min Days</label>
+                                        <input type="number" name="conditions[0][min_days]" min="1" 
+                                               class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-neon-blue focus:border-transparent">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-slate-700 mb-2">Max Days (Optional)</label>
+                                        <input type="number" name="conditions[0][max_days]" min="1" 
+                                               class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-neon-blue focus:border-transparent">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-slate-700 mb-2">Percentage</label>
+                                        <div class="relative">
+                                            <input type="number" name="conditions[0][percentage]" step="0.01" min="0.01" max="50" 
+                                                   class="w-full px-3 py-2 pr-8 border border-slate-300 rounded-lg focus:ring-2 focus:ring-neon-blue focus:border-transparent">
+                                            <span class="absolute right-3 top-2 text-slate-500">%</span>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <button type="button" onclick="removeCondition(this)" 
+                                                class="w-full px-3 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors duration-200">
+                                            Remove
+                                        </button>
+                                    </div>
+                                </div>
+                            @endif
+                        </div>
+                        
+                        <button type="button" onclick="addCondition()" 
+                                class="inline-flex items-center px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors duration-200">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                            </svg>
+                            Add Another Condition
+                        </button>
+                    </div>
+                    @endif
+
+                </div>
+
+                <!-- Form Actions -->
+                <div class="px-6 py-4 bg-slate-50 border-t border-slate-200 flex justify-end space-x-3">
+                    <a href="{{ route('admin.discounts.show', $discount) }}" 
+                       class="px-6 py-2 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-all duration-200">
+                        Cancel
+                    </a>
+                    <button type="submit" 
+                            class="px-6 py-2 bg-neon-blue text-white rounded-lg hover:bg-blue-dark transition-all duration-200 shadow-sm">
+                        Update Discount
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@if($discount->type === 'duration')
+<script>
+let conditionIndex = {{ count($discount->conditions ?? []) }};
+
+function addCondition() {
+    const container = document.getElementById('conditions-container');
+    const newCondition = document.createElement('div');
+    newCondition.className = 'condition-row grid grid-cols-1 md:grid-cols-4 gap-4 items-end mb-4';
+    newCondition.innerHTML = `
+        <div>
+            <label class="block text-sm font-medium text-slate-700 mb-2">Min Days</label>
+            <input type="number" name="conditions[${conditionIndex}][min_days]" min="1" 
+                   class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-neon-blue focus:border-transparent">
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-slate-700 mb-2">Max Days (Optional)</label>
+            <input type="number" name="conditions[${conditionIndex}][max_days]" min="1" 
+                   class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-neon-blue focus:border-transparent">
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-slate-700 mb-2">Percentage</label>
+            <div class="relative">
+                <input type="number" name="conditions[${conditionIndex}][percentage]" step="0.01" min="0.01" max="50" 
+                       class="w-full px-3 py-2 pr-8 border border-slate-300 rounded-lg focus:ring-2 focus:ring-neon-blue focus:border-transparent">
+                <span class="absolute right-3 top-2 text-slate-500">%</span>
+            </div>
+        </div>
+        <div>
+            <button type="button" onclick="removeCondition(this)" 
+                    class="w-full px-3 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors duration-200">
+                Remove
+            </button>
+        </div>
+    `;
+    container.appendChild(newCondition);
+    conditionIndex++;
+}
+
+function removeCondition(button) {
+    const conditionRows = document.querySelectorAll('.condition-row');
+    if (conditionRows.length > 1) {
+        button.closest('.condition-row').remove();
+    }
+}
+</script>
+@endif
+@endsection

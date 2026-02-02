@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Location Dropdown Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        select, input { width: 300px; padding: 8px; margin-bottom: 10px; }
+        .custom-location { margin-top: 10px; }
+        .test-results { background: #f0f0f0; padding: 15px; margin-top: 20px; }
+        .success { color: green; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <h1>Location Dropdown Functionality Test</h1>
+    
+    <form id="booking-form">
+        <div class="form-group">
+            <label for="pickup_location">Pickup Location</label>
+            <select id="pickup_location" name="pickup_location" required>
+                <option value="">Select pickup location</option>
+                <optgroup label="Addis Ababa">
+                    <option value="Bole International Airport">Bole International Airport</option>
+                    <option value="Bole Atlas">Bole Atlas</option>
+                    <option value="Kazanchis">Kazanchis</option>
+                    <option value="Piazza">Piazza</option>
+                </optgroup>
+                <optgroup label="Other Cities">
+                    <option value="Bahir Dar">Bahir Dar</option>
+                    <option value="Gondar">Gondar</option>
+                </optgroup>
+                <option value="other">Other (specify below)</option>
+            </select>
+            
+            <div id="pickup_custom_location" style="display: none;" class="custom-location">
+                <input type="text" 
+                       id="pickup_location_custom" 
+                       name="pickup_location_custom"
+                       placeholder="Enter pickup location">
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label for="return_location">Return Location</label>
+            <select id="return_location" name="return_location" required>
+                <option value="">Select return location</option>
+                <option value="same_as_pickup">Same as pickup location</option>
+                <optgroup label="Addis Ababa">
+                    <option value="Bole International Airport">Bole International Airport</option>
+                    <option value="Bole Atlas">Bole Atlas</option>
+                    <option value="Kazanchis">Kazanchis</option>
+                    <option value="Piazza">Piazza</option>
+                </optgroup>
+                <optgroup label="Other Cities">
+                    <option value="Bahir Dar">Bahir Dar</option>
+                    <option value="Gondar">Gondar</option>
+                </optgroup>
+                <option value="other">Other (specify below)</option>
+            </select>
+            
+            <div id="return_custom_location" style="display: none;" class="custom-location">
+                <input type="text" 
+                       id="return_location_custom" 
+                       name="return_location_custom"
+                       placeholder="Enter return location">
+            </div>
+        </div>
+        
+        <button type="submit">Test Form Submission</button>
+    </form>
+    
+    <div class="test-results">
+        <h3>Test Results:</h3>
+        <div id="test-output"></div>
+    </div>
+
+    <script>
+        // Handle location dropdown functionality
+        function handleLocationDropdowns() {
+            const pickupSelect = document.getElementById('pickup_location');
+            const returnSelect = document.getElementById('return_location');
+            const pickupCustomDiv = document.getElementById('pickup_custom_location');
+            const returnCustomDiv = document.getElementById('return_custom_location');
+            const pickupCustomInput = document.getElementById('pickup_location_custom');
+            const returnCustomInput = document.getElementById('return_location_custom');
+            
+            // Handle pickup location changes
+            pickupSelect.addEventListener('change', function() {
+                logTest(`Pickup location changed to: ${this.value}`);
+                if (this.value === 'other') {
+                    pickupCustomDiv.style.display = 'block';
+                    pickupCustomInput.required = true;
+                    logTest('✓ Custom pickup input shown and made required');
+                } else {
+                    pickupCustomDiv.style.display = 'none';
+                    pickupCustomInput.required = false;
+                    pickupCustomInput.value = '';
+                    logTest('✓ Custom pickup input hidden and cleared');
+                }
+                
+                // Update return location "same as pickup" option text
+                updateSameAsPickupOption();
+            });
+            
+            // Handle return location changes
+            returnSelect.addEventListener('change', function() {
+                logTest(`Return location changed to: ${this.value}`);
+                if (this.value === 'other') {
+                    returnCustomDiv.style.display = 'block';
+                    returnCustomInput.required = true;
+                    logTest('✓ Custom return input shown and made required');
+                } else if (this.value === 'same_as_pickup') {
+                    returnCustomDiv.style.display = 'none';
+                    returnCustomInput.required = false;
+                    returnCustomInput.value = '';
+                    logTest('✓ Same as pickup selected - custom input hidden');
+                    // Copy pickup location value
+                    copyPickupToReturn();
+                } else {
+                    returnCustomDiv.style.display = 'none';
+                    returnCustomInput.required = false;
+                    returnCustomInput.value = '';
+                    logTest('✓ Standard location selected - custom input hidden');
+                }
+            });
+            
+            // Initialize on page load
+            if (pickupSelect.value === 'other') {
+                pickupCustomDiv.style.display = 'block';
+                pickupCustomInput.required = true;
+            }
+            
+            if (returnSelect.value === 'other') {
+                returnCustomDiv.style.display = 'block';
+                returnCustomInput.required = true;
+            } else if (returnSelect.value === 'same_as_pickup') {
+                copyPickupToReturn();
+            }
+        }
+
+        function updateSameAsPickupOption() {
+            const pickupSelect = document.getElementById('pickup_location');
+            const returnSelect = document.getElementById('return_location');
+            const sameAsPickupOption = returnSelect.querySelector('option[value="same_as_pickup"]');
+            
+            if (sameAsPickupOption && pickupSelect.value) {
+                const pickupText = pickupSelect.options[pickupSelect.selectedIndex].text;
+                
+                if (pickupSelect.value === 'other') {
+                    const customInput = document.getElementById('pickup_location_custom');
+                    const customValue = customInput.value.trim();
+                    if (customValue) {
+                        sameAsPickupOption.textContent = `Same as pickup (${customValue})`;
+                        logTest(`✓ Same as pickup option updated with custom value: ${customValue}`);
+                    } else {
+                        sameAsPickupOption.textContent = 'Same as pickup location';
+                        logTest('✓ Same as pickup option reset to default');
+                    }
+                } else if (pickupSelect.value) {
+                    sameAsPickupOption.textContent = `Same as pickup (${pickupText})`;
+                    logTest(`✓ Same as pickup option updated: ${pickupText}`);
+                } else {
+                    sameAsPickupOption.textContent = 'Same as pickup location';
+                    logTest('✓ Same as pickup option reset to default');
+                }
+            }
+        }
+
+        function copyPickupToReturn() {
+            const pickupSelect = document.getElementById('pickup_location');
+            const pickupCustomInput = document.getElementById('pickup_location_custom');
+            
+            // Create hidden input to store the actual pickup location value for return
+            let hiddenReturnInput = document.getElementById('actual_return_location');
+            if (!hiddenReturnInput) {
+                hiddenReturnInput = document.createElement('input');
+                hiddenReturnInput.type = 'hidden';
+                hiddenReturnInput.id = 'actual_return_location';
+                hiddenReturnInput.name = 'actual_return_location';
+                document.getElementById('booking-form').appendChild(hiddenReturnInput);
+                logTest('✓ Hidden input created for actual return location');
+            }
+            
+            if (pickupSelect.value === 'other') {
+                hiddenReturnInput.value = pickupCustomInput.value.trim() || pickupSelect.value;
+                logTest(`✓ Return location set to custom pickup: ${hiddenReturnInput.value}`);
+            } else {
+                hiddenReturnInput.value = pickupSelect.value;
+                logTest(`✓ Return location set to pickup: ${hiddenReturnInput.value}`);
+            }
+        }
+
+        // Handle form submission to process custom locations
+        function handleFormSubmission() {
+            const form = document.getElementById('booking-form');
+            
+            form.addEventListener('submit', function(e) {
+                e.preventDefault(); // Prevent actual submission for testing
+                
+                const pickupSelect = document.getElementById('pickup_location');
+                const returnSelect = document.getElementById('return_location');
+                const pickupCustomInput = document.getElementById('pickup_location_custom');
+                const returnCustomInput = document.getElementById('return_location_custom');
+                
+                logTest('=== FORM SUBMISSION TEST ===');
+                
+                // Handle pickup location
+                if (pickupSelect.value === 'other') {
+                    const customValue = pickupCustomInput.value.trim();
+                    if (!customValue) {
+                        logTest('❌ ERROR: Custom pickup location is empty');
+                        alert('Please enter pickup location');
+                        pickupCustomInput.focus();
+                        return false;
+                    }
+                    logTest(`✓ Custom pickup location: ${customValue}`);
+                } else {
+                    logTest(`✓ Standard pickup location: ${pickupSelect.value}`);
+                }
+                
+                // Handle return location
+                if (returnSelect.value === 'other') {
+                    const customValue = returnCustomInput.value.trim();
+                    if (!customValue) {
+                        logTest('❌ ERROR: Custom return location is empty');
+                        alert('Please enter return location');
+                        returnCustomInput.focus();
+                        return false;
+                    }
+                    logTest(`✓ Custom return location: ${customValue}`);
+                } else if (returnSelect.value === 'same_as_pickup') {
+                    if (pickupSelect.value === 'other') {
+                        const finalLocation = pickupCustomInput.value.trim();
+                        logTest(`✓ Return location same as custom pickup: ${finalLocation}`);
+                    } else {
+                        logTest(`✓ Return location same as pickup: ${pickupSelect.value}`);
+                    }
+                } else {
+                    logTest(`✓ Standard return location: ${returnSelect.value}`);
+                }
+                
+                logTest('✅ FORM SUBMISSION SUCCESSFUL!');
+                return true;
+            });
+        }
+
+        function logTest(message) {
+            const output = document.getElementById('test-output');
+            const timestamp = new Date().toLocaleTimeString();
+            output.innerHTML += `<div>[${timestamp}] ${message}</div>`;
+            output.scrollTop = output.scrollHeight;
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            logTest('🚀 Location dropdown functionality initialized');
+            handleLocationDropdowns();
+            handleFormSubmission();
+            
+            // Update "same as pickup" option when pickup custom input changes
+            const pickupCustomInput = document.getElementById('pickup_location_custom');
+            if (pickupCustomInput) {
+                pickupCustomInput.addEventListener('input', updateSameAsPickupOption);
+                logTest('✓ Custom pickup input listener added');
+            }
+            
+            logTest('✅ All functionality ready for testing!');
+            logTest('');
+            logTest('TEST INSTRUCTIONS:');
+            logTest('1. Select "Other" for pickup location and enter custom text');
+            logTest('2. Select "Same as pickup location" for return location');
+            logTest('3. Try different combinations and submit the form');
+        });
+    </script>
+</body>
+</html>
